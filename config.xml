@@ -2,7 +2,7 @@
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Alma Item Hold Request</Name>
   <Author>Robert Wilson, University of Minnesota</Author>
-  <Version>0.0.1</Version>
+  <Version>1.2.0</Version>
   <Active>true</Active>
   <Type>Addon</Type>
   <Description>Scans a barcode to lookup an item in Alma and places a request (hold) to route it to ILL office.</Description>

@@ -124,7 +124,7 @@ function CheckRequestStatus()
                  
                  -- FIX: Translate "History" to something meaningful
                  if status == "History" then
-                    interfaceMngr:ShowMessage("Request is/has Inactive/Cancelled.", "Info");
+                    interfaceMngr:ShowMessage("Request is Inactive/Cancelled.", "Info");
                  else
                     interfaceMngr:ShowMessage("Current Status: " .. status, "Status");
                  end

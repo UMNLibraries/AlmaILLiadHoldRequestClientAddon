@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Name>Alma Item Hold Request</Name>
+  <Author>Robert Wilson, University of Minnesota</Author>
+  <Version>0.0.1</Version>
+  <Active>true</Active>
+  <Type>Addon</Type>
+  <Description>Scans a barcode to lookup an item in Alma and places a request (hold) to route it to ILL office.</Description>
+  <Forms>
+    <Form>FormItem</Form>
+    <Form>FormRequest</Form>
+  </Forms>
+  <Settings>
+    <Setting name="Alma API URL" value="https://api-na.hosted.exlibrisgroup.com/almaws/v1/" type="string">
+      <Description>The URL to the Alma API (e.g., https://api-na.hosted.exlibrisgroup.com/almaws/v1/).</Description>
+    </Setting>
+    <Setting name="Alma API Key" value="" type="string">
+      <Description>API key used for interacting with the Alma API (Requires Read/Write permissions).</Description>
+    </Setting>
+    <Setting name="ILL Request User ID" value="" type="string">
+      <Description>The Alma User ID (primary identifier) of the pseudopatron for whom hold will be placed (e.g., the internal ILL department account).</Description>
+    </Setting>
+    <Setting name="Pickup Library Code" value="RES_SHARE" type="string">
+      <Description>The Alma Library Code where the item should be delivered (e.g., RES_SHARE).</Description>
+    </Setting>
+    <Setting name="Field to Perform Lookup With" value="Transaction.ItemInfo1" type="string">
+      <Description>The field that contains the barcode.</Description>
+    </Setting>
+  </Settings>
+<Files>
+    <File>Utility.lua</File>
+    <File>Main.lua</File>
+    <File>AlmaApi.lua</File>
+    <File>WebClient.lua</File>
+  </Files>
+</Configuration>

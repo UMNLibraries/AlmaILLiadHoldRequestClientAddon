@@ -16,39 +16,34 @@ This ILLiad addon allows staff to request physical item holds in Ex Libris Alma 
 
 ## INSTALLATION
 
-1. Open the ILLiad Customization Manager.
-2. Navigate to the "Addons" tab.
-3. Click "New" and upload the addon folder (zip file).
-4. Ensure the addon is "Active".
+1. Download zip.
+2. Navigate to ILLiad directory (C:\Program Files (x86)\ILLiad\Addons
+3. Copy zip file and extract.
+4. Ensure the addon is "Active" in ILLiad Client > System > Manage Addons.
 
 ---
 
 ## CONFIGURATION SETTINGS
 
-Once installed, configure the following settings in the Customization Manager:
+Once installed, configure the following settings in the addon settings:
 
 1. Alma API URL
 * The base URL for the API.
 * Example: [https://api-na.hosted.exlibrisgroup.com/almaws/v1/]()
 
-
 2. Alma API Key
 * Your secret API key from the Ex Libris Developer Network.
-
 
 3. Field to Perform Lookup With
 * The ILLiad table and column containing the barcode.
 * Example: Transaction.ItemInfo1
 
-
 4. ILL Request User ID
 * The Alma User ID (Primary ID) that the hold should be placed for like a ILL patron/user.
-
 
 5. Pickup Library Code
 * The code of the library where the item should be routed (e.g., MAIN, LAW, CIRC).
 * This must match the code in Alma configuration.
-
 
 ---
 

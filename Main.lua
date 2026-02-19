@@ -19,6 +19,10 @@ settings.FieldToPerformLookupWith = GetSetting("Field to Perform Lookup With");
 settings.ILLUser = GetSetting("ILL Request User ID");
 settings.PickupLib = GetSetting("Pickup Library Code");
 
+-- Configurable Settings
+settings.HoldIdField = GetSetting("Alma_Hold_ID_Field");
+settings.AutoRouteQueue = GetSetting("Auto_Route_On_Success");
+
 local interfaceMngr = nil;
 
 function Init()
@@ -57,9 +61,9 @@ function GetAlmaItemIds()
     return AlmaApi.ParseItemIds(itemXml);
 end
 
--- HELPER: Extracts just the digits "12345" from "Created 12345" or "Cancelled 12345"
+-- HELPER: Extracts just the digits
 function GetRequestIdFromField()
-    local rawVal = GetFieldValue("Transaction", "ItemInfo5");
+    local rawVal = GetFieldValue("Transaction", settings.HoldIdField);
     if rawVal == nil or rawVal == "" then return nil; end
     return string.match(rawVal, "%d+");
 end
@@ -77,6 +81,7 @@ function RouteItem()
 
     local transactionNumber = GetFieldValue("Transaction", "TransactionNumber");
     
+    -- API CALL
     local responseXml = AlmaApi.PlaceRequest(mmsId, holdingId, itemPid, settings.ILLUser, settings.PickupLib, transactionNumber);
 
     types["System.Windows.Forms.Cursor"].Current = types["System.Windows.Forms.Cursors"].Default;
@@ -85,30 +90,57 @@ function RouteItem()
         local reqIdNode = responseXml:SelectSingleNode("//request_id");
         if reqIdNode then
              local reqId = reqIdNode.InnerText;
-             interfaceMngr:ShowMessage("Hold placed! ID: " .. reqId, "Success");
              
-             pcall(function()
-                 SetFieldValue("Transaction", "ItemInfo5", "Created " .. reqId);
-                 ExecuteCommand("Save", {});
-             end);
+             -- SUCCESS: Update Field
+             SetFieldValue("Transaction", settings.HoldIdField, "Created " .. reqId);
+             
+             -- SAVE 1: Commit the ID to the database immediately
+             ExecuteCommand("Save", {});
+             log:Info("Hold ID Saved. Checking for Auto-Route...");
+
+             -- AUTO-ROUTE LOGIC
+             if settings.AutoRouteQueue and settings.AutoRouteQueue ~= "" then
+                 
+                 log:Info("Attempting to route to queue: " .. settings.AutoRouteQueue);
+                 
+                 -- 2. Execute Route with the correct Client arguments (Queue Name, Boolean)
+                 local success, err = pcall(function() 
+                    ExecuteCommand("Route", {settings.AutoRouteQueue, true}); 
+                 end);
+
+                 if success then
+                     log:Info("Route command executed successfully.");
+                     -- The form will likely close here because we passed 'true'
+                 else
+                     log:Error("Route command FAILED: " .. tostring(err));
+                     interfaceMngr:ShowMessage("Hold placed, but Auto-Route failed. Check logs.", "Warning");
+                 end
+
+             else
+                 log:Info("Auto-Route disabled or queue name is empty.");
+                 interfaceMngr:ShowMessage("Hold placed successfully! ID: " .. reqId, "Success");
+             end
+
         else
+            -- ALMA ERROR
             local errText = "Unknown Error";
             local errorNode = responseXml:SelectSingleNode("//errorMessage");
             if errorNode then errText = errorNode.InnerText end
             interfaceMngr:ShowMessage("Alma Error: " .. errText, "API Error");
             
-            pcall(function() SetFieldValue("Transaction", "ItemInfo5", "Error: " .. errText); ExecuteCommand("Save", {}); end);
+            SetFieldValue("Transaction", settings.HoldIdField, "Error: " .. errText); 
+            ExecuteCommand("Save", {}); 
         end
     else
         interfaceMngr:ShowMessage("No response from Alma.", "Error");
     end
 end
 
--- 2. CHECK STATUS (UPDATED)
+-- 2. CHECK STATUS
 function CheckRequestStatus()
     local reqId = GetRequestIdFromField();
     if not reqId then
-        interfaceMngr:ShowMessage("No Request ID found in ItemInfo5.", "Error");
+        interfaceMngr:ShowMessage("No Request ID found in " .. settings.HoldIdField .. ".", "Error");
         return;
     end
 
@@ -121,10 +153,8 @@ function CheckRequestStatus()
              local statusNode = responseXml:SelectSingleNode("//request_status");
              if statusNode then
                  local status = statusNode.InnerText;
-                 
-                 -- FIX: Translate "History" to something meaningful
-                 if status == "History" then
-                    interfaceMngr:ShowMessage("Request is Inactive/Cancelled.", "Info");
+                 if status == "HISTORY" then
+                    interfaceMngr:ShowMessage("Request is Inactive (History/Cancelled).", "Info");
                  else
                     interfaceMngr:ShowMessage("Current Status: " .. status, "Status");
                  end
@@ -142,7 +172,7 @@ end
 function CancelHoldRequest()
     local reqId = GetRequestIdFromField();
     if not reqId then
-        interfaceMngr:ShowMessage("No Request ID found in ItemInfo5.", "Error");
+        interfaceMngr:ShowMessage("No Request ID found in " .. settings.HoldIdField .. ".", "Error");
         return;
     end
 
@@ -156,7 +186,7 @@ function CancelHoldRequest()
              interfaceMngr:ShowMessage("Request Cancelled Successfully.", "Success");
              
              pcall(function()
-                 SetFieldValue("Transaction", "ItemInfo5", "Cancelled " .. reqId);
+                 SetFieldValue("Transaction", settings.HoldIdField, "Cancelled " .. reqId);
                  ExecuteCommand("Save", {});
              end);
         else

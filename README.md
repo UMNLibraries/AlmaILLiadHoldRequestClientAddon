@@ -56,6 +56,7 @@ The addon adds a "Hold Request" ribbon tab to the ILLiad Request Form.
 * Locates the item in Alma.
 * Places a hold request for the configured "ILL Request User ID".
 * On success: Writes "Created [RequestID]" into the "ItemInfo5" field.
+* On success: Route to field set in config.xml. In Stacks Searching by default. Use other field for testing. Leave field blank to disable auto-route. No auto-routing if hold is cancelled. 
 
 
 2. Check Status
@@ -75,8 +76,8 @@ The addon adds a "Hold Request" ribbon tab to the ILLiad Request Form.
 
 ## TROUBLESHOOTING
 
-* "No barcode found": Ensure the "Field to Perform Lookup With" setting points to a populated field or modify Main.lua if using different field.
-* * Might add as configurable in config
+* "No barcode found": Ensure the "Field to Perform Lookup With" setting points to a populated field.
+* * Field configurable in config.xml
 * "Alma Error": Read the popup message. Common errors include "Patron not active" or "Item policy prevents request".
-* Data Storage: This addon exclusively uses the "ItemInfo5" field to store the Alma Request ID. Do not manually clear this field if you wish to track the status.
-* * Might add as configuable in config
+* Data Storage: This addon by default uses the "ItemInfo5" field to store the Alma Request ID. Do not manually clear this field if you wish to track the status.
+* * Field configurable in config.xml

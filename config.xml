@@ -2,10 +2,10 @@
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Alma Item Hold Request</Name>
   <Author>Robert Wilson, University of Minnesota</Author>
-  <Version>1.2.0</Version>
+  <Version>1.7.0</Version>
   <Active>true</Active>
   <Type>Addon</Type>
-  <Description>Scans a barcode to lookup an item in Alma and places a request (hold) to route it to ILL office.</Description>
+  <Description>Scans a barcode to lookup an item in Alma and places a request (hold). Supports auto-routing on success.</Description>
   <Forms>
     <Form>FormItem</Form>
     <Form>FormRequest</Form>
@@ -26,8 +26,14 @@
     <Setting name="Field to Perform Lookup With" value="Transaction.ItemInfo1" type="string">
       <Description>The field that contains the barcode.</Description>
     </Setting>
+    <Setting name="Alma_Hold_ID_Field" value="ItemInfo5" type="string">
+      <Description>The Transaction field used to store the Alma Request ID and status (e.g., ItemInfo5).</Description>
+    </Setting>
+    <Setting name="Auto_Route_On_Success" value="In Stacks Searching" type="string">
+      <Description>The name of the queue to move the request to after a successful hold is placed. Leave blank to disable auto-routing.</Description>
+    </Setting>
   </Settings>
-<Files>
+  <Files>
     <File>Utility.lua</File>
     <File>Main.lua</File>
     <File>AlmaApi.lua</File>

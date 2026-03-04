@@ -9,19 +9,16 @@ types["System.Text.Encoding"] = luanet.import_type("System.Text.Encoding");
 types["System.Xml.XmlTextReader"] = luanet.import_type("System.Xml.XmlTextReader");
 types["System.Xml.XmlDocument"] = luanet.import_type("System.Xml.XmlDocument");
 
--- Create a logger
 local log = types["log4net.LogManager"].GetLogger(rootLogger .. ".AlmaApi");
 
 AlmaApi = AlmaApiInternal;
 
--- Helper to construct base URL
 local function GetBaseUrl(mmsId, holdingId, itemPid)
     return AlmaApiInternal.ApiUrl .. "bibs/" .. mmsId .. 
            "/holdings/" .. holdingId .. 
            "/items/" .. itemPid
 end
 
--- 1. RETRIEVE ITEM
 local function RetrieveItemByBarcode(barcode)
     local requestUrl = AlmaApiInternal.ApiUrl .. "items?apikey="..
          Utility.URLEncode(AlmaApiInternal.ApiKey) .. "&item_barcode=" .. Utility.URLEncode(barcode);
@@ -33,7 +30,6 @@ local function RetrieveItemByBarcode(barcode)
     return WebClient.ReadResponse(response);
 end
 
--- 2. PARSE IDS
 local function ParseItemIds(itemXml)
     if itemXml == nil then return nil, nil, nil end
     
@@ -52,12 +48,16 @@ local function ParseItemIds(itemXml)
     return mmsId, holdingId, itemPid;
 end
 
--- 3. PLACE REQUEST
-local function PlaceRequest(mmsId, holdingId, itemPid, requesterUserId, pickupLibrary, transactionNumber)
+-- Updated PlaceRequest to handle allowSameRequest
+local function PlaceRequest(mmsId, holdingId, itemPid, requesterUserId, pickupLibrary, transactionNumber, allowSameRequest)
     local requestUrl = GetBaseUrl(mmsId, holdingId, itemPid) .. "/requests" ..
                  "?user_id=" .. Utility.URLEncode(requesterUserId) .. 
                  "&user_id_type=all_unique" ..
                  "&apikey=" .. Utility.URLEncode(AlmaApiInternal.ApiKey)
+
+    if allowSameRequest then
+         requestUrl = requestUrl .. "&allow_same_request=true"
+    end
 
     local commentText = "ILLiad Lending Request " .. (transactionNumber or "")
 
@@ -76,7 +76,6 @@ local function PlaceRequest(mmsId, holdingId, itemPid, requesterUserId, pickupLi
     return WebClient.ReadResponse(responseString)
 end
 
--- 4. GET REQUEST STATUS
 local function GetRequest(mmsId, holdingId, itemPid, requestId)
     local requestUrl = GetBaseUrl(mmsId, holdingId, itemPid) .. "/requests/" .. requestId ..
                        "?apikey=" .. Utility.URLEncode(AlmaApiInternal.ApiKey);
@@ -87,23 +86,20 @@ local function GetRequest(mmsId, holdingId, itemPid, requestId)
     return WebClient.ReadResponse(response);
 end
 
--- 5. CANCEL REQUEST (Fixed)
-local function CancelRequest(mmsId, holdingId, itemPid, requestId)
+-- Updated CancelRequest to pass reason and note
+local function CancelRequest(mmsId, holdingId, itemPid, requestId, reason, note)
     local requestUrl = GetBaseUrl(mmsId, holdingId, itemPid) .. "/requests/" .. requestId ..
-                       "?apikey=" .. Utility.URLEncode(AlmaApiInternal.ApiKey);
+                       "?reason=" .. Utility.URLEncode(reason) ..
+                       "&note=" .. Utility.URLEncode(note) ..
+                       "&apikey=" .. Utility.URLEncode(AlmaApiInternal.ApiKey);
 
     log:Debug("Attempting DELETE on URL: " .. requestUrl);
 
-    -- FIX: Use raw .NET WebClient to ensure we can send a DELETE verb
-    -- The standard 'WebClient' helper in Atlas often lacks a specific Delete method.
     local client = types["System.Net.WebClient"]();
     client.Encoding = types["System.Text.Encoding"].UTF8;
-    
-    -- Add Headers
     client.Headers:Add("Accept", "application/xml");
     
     local success, result = pcall(function() 
-        -- UploadString with "DELETE" is the standard .NET way to send a DELETE body/request
         return client:UploadString(requestUrl, "DELETE", "");
     end);
 

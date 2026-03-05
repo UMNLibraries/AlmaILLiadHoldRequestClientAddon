@@ -69,12 +69,13 @@ function GetRequestIdsFromField()
     return ids;
 end
 
--- HELPER: Parses comma-separated barcodes into a clean table
+-- HELPER: Parses space-separated barcodes into a clean table
 function GetCleanBarcodesList()
     local rawBarcodes = GetRawBarcodeString();
     if not rawBarcodes or rawBarcodes == "" then return {} end
 
-    local barcodeList = Utility.StringSplit(",", rawBarcodes);
+    -- Changed from "," to " " to split barcodes by space
+    local barcodeList = Utility.StringSplit(" ", rawBarcodes);
     local cleanBarcodes = {};
     for _, b in ipairs(barcodeList) do
         local cb = Utility.Trim(b);
@@ -166,7 +167,6 @@ function CheckRequestStatus()
     local statuses = {};
 
     for i, reqId in ipairs(reqIds) do
-        -- We map request IDs back to barcodes by their index to lookup the PIDs
         local barcode = cleanBarcodes[i];
         if barcode then
             local mmsId, holdingId, itemPid = GetAlmaItemIdsByBarcode(barcode);

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>Alma Item Hold Request</Name>
-  <Author>Robert Wilson, University of Minnesota</Author>
-  <Version>1.8.0</Version>
+  <Author>Robert Timothy Wilson, University of Minnesota</Author>
+  <Version>1.8.1</Version>
   <Active>true</Active>
   <Type>Addon</Type>
   <Description>Scans a barcode to lookup an item in Alma and places a request (hold). Supports auto-routing on success.</Description>

@@ -53,6 +53,7 @@ The addon adds a "Hold Request" ribbon tab to the ILLiad Request Form.
 
 1. Request Hold
 * Reads the barcode from the transaction (ItemInfo1) field.
+* This support multiple barcodes for multiple request if Alma configured to allow. Barcodes should be space-separated. space-delimited done to accomodate NCIP lending addon checkout workflow as well.
 * Locates the item in Alma.
 * Places a hold request for the configured "ILL Request User ID".
 * On success: Writes "Created [RequestID]" into the "ItemInfo5" field.

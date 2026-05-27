@@ -24,7 +24,7 @@ local function RetrieveItemByBarcode(barcode)
          Utility.URLEncode(AlmaApiInternal.ApiKey) .. "&item_barcode=" .. Utility.URLEncode(barcode);
     
     local headers = {"Accept: application/xml", "Content-Type: application/xml"};
-    log:Debug("Request URL: " .. requestUrl);
+    log:Debug("Request URL: " .. Utility.Redact(requestUrl));
 
     local response = WebClient.GetRequest(requestUrl, headers);
     return WebClient.ReadResponse(response);
@@ -93,7 +93,7 @@ local function CancelRequest(mmsId, holdingId, itemPid, requestId, reason, note)
                        "&note=" .. Utility.URLEncode(note) ..
                        "&apikey=" .. Utility.URLEncode(AlmaApiInternal.ApiKey);
 
-    log:Debug("Attempting DELETE on URL: " .. requestUrl);
+    log:Debug("Attempting DELETE on URL: " .. Utility.Redact(requestUrl));
 
     local client = types["System.Net.WebClient"]();
     client.Encoding = types["System.Text.Encoding"].UTF8;
@@ -107,7 +107,7 @@ local function CancelRequest(mmsId, holdingId, itemPid, requestId, reason, note)
         log:Info("Cancel successful.");
         return true;
     else
-        log:Error("Cancel Failed: " .. tostring(result));
+        log:Error("Cancel Failed: " .. Utility.Redact(tostring(result)));
         return false;
     end
 end

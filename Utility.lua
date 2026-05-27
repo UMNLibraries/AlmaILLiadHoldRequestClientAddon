@@ -8,6 +8,24 @@ luanet.load_assembly("System");
 local types = {};
 types["System.Type"] = luanet.import_type("System.Type");
 
+-- Centralized Redaction Helper
+local function Redact(value)
+  if value == nil then return nil end
+  local apiKey = nil
+  if AlmaApi and AlmaApi.ApiKey then
+    apiKey = AlmaApi.ApiKey
+  end
+
+  if apiKey == nil or apiKey == "" then
+    return value;
+  end
+
+  -- Escape any pattern-special characters so the API key is treated literally.
+  local literalPattern = apiKey:gsub("(%W)", "%%%1");
+  -- gsub returns the replacement count as a second value; the parens drop it.
+  return (tostring(value):gsub(literalPattern, "[REDACTED]"));
+end
+
 local function Log(input, debugOnly)
   debugOnly = debugOnly or false;
 
@@ -15,7 +33,7 @@ local function Log(input, debugOnly)
     local t = type(input);
 
     if (t == "string" or t == "number") then
-      LogDebug(input);
+      LogDebug(Redact(input));
     elseif (t == "table") then
       LogTable(input);
     elseif (t == "nil") then
@@ -37,7 +55,7 @@ local function Log(input, debugOnly)
         LogException(input);
       else
         pcall(function()
-        LogDebug(input:ToString());
+        LogDebug(Redact(input:ToString()));
         end);
       end
     end
@@ -68,7 +86,7 @@ end
 
 local function LogIndented(entry, depth)
   depth = (depth or 0);
-  LogDebug(string.rep("> ", depth) .. entry);
+  LogDebug(string.rep("> ", depth) .. Redact(entry));
 end
 
 local function LogTable(input, depth)
@@ -142,3 +160,4 @@ UtilityInternal.Log = Log;
 UtilityInternal.URLDecode = URLDecode;
 UtilityInternal.URLEncode = URLEncode;
 UtilityInternal.StringSplit = StringSplit;
+UtilityInternal.Redact = Redact;

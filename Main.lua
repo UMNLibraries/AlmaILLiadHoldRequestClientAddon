@@ -140,7 +140,7 @@ function RouteItem()
                     ExecuteCommand("Route", {settings.AutoRouteQueue, true}); 
                  end);
                  if not success then
-                     log:Error("Route command FAILED: " .. tostring(err));
+                     log:Error("Route command FAILED: " .. Utility.Redact(tostring(err)));
                      interfaceMngr:ShowMessage("Holds placed, but Auto-Route failed.", "Warning");
                  end
             else
